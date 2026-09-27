@@ -106,10 +106,12 @@ if __name__ == "__main__":
 
     block_predictor = BlockTypePredictor(embed_dim=args.embed_dim, num_classes=args.num_block_categories, logger=logger).to(device)
 
-    teacher_model.apply(init_weights)
     student_model.apply(init_weights)
     predictor.apply(init_weights)
     block_predictor.apply(init_weights)
+
+    teacher_model.load_state_dict(student_model.state_dict())
+    teacher_model.requires_grad_(False)
 
     model_config = get_model_config(
         student_model,
