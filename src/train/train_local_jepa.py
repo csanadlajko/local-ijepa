@@ -53,11 +53,15 @@ def train_local_jepa(
             # [B, N] corresponding attention mask is given
             teacher_target_tokens, _ = apply_mask(teacher_tokens, target_masks, predictor=True)
 
+        # teacher tokens [B, N_t, D] -> ordered patch embeddings for each block
+        # N_t / num_blocks patches for each block -> acquire mean pool based on that
+        teacher_mean_block_tokens = teacher_target_tokens.view(teacher_target_tokens.shape[0], len(target_masks[0]), teacher_target_tokens.shape[1] // len(target_masks[0]), teacher_target_tokens.shape[2]).mean(dim=2)
+
         ## create context student tokens
         # student tokens are padded as well to the larges context mask index list
         student_tokens, _ = student_mod(images, masks=context_masks, cls=False)
 
-        predicted_target_tokens, _ = predictor(
+        predicted_target_tokens, predicted_block_cls_tokens = predictor(
             student_tokens, 
             context_masks, 
             target_masks, 
@@ -71,16 +75,20 @@ def train_local_jepa(
         optim_student.zero_grad()
         optim_predictor.zero_grad()
 
+        loss_cls = ijepa_loss(predicted_block_cls_tokens, teacher_mean_block_tokens)
+
         loss_curr = ijepa_loss(predicted_target_tokens, teacher_target_tokens)
 
-        loss_curr.backward()
+        sum_loss = loss_curr + (0.7 * loss_cls)
+
+        sum_loss.backward()
         
         optim_student.step()
         optim_predictor.step()
         
         _ema_update(teacher_mod, student_mod, momentum)
         
-        total_loss += loss_curr.item()
+        total_loss += sum_loss.item()
         num_batches += 1
         bar.update(1)
         if i == 315:
@@ -142,7 +150,7 @@ def train_block_predictor(
         context_masks, target_masks = normal_mask(images, batch_bbox_list)
         tens_int_classes, _ = block_processor(batch_bbox_list, target_masks, string_labels, int_labels)
 
-        student_tokens, _ = student_mod(images, masks=context_masks)
+        student_tokens, _ = student_mod(images, masks=context_masks, cls=False)
 
         _, block_cls_tokens = predictor(
             student_tokens, 
@@ -250,7 +258,7 @@ def eval_block_predictor(
 
         with torch.no_grad():
 
-            student_tokens, _ = student_model(images, masks=context_masks)
+            student_tokens, _ = student_model(images, masks=context_masks, cls=False)
 
             _, block_cls_tokens = predictor(
                 student_tokens, 
