@@ -115,10 +115,10 @@ class HyperbolicEmbdeddingSpaceHead(RootEmbeddingSpaceHead):
 class SphericEmbeddingSpaceHead(RootEmbeddingSpaceHead):
 
     def to_manifold(self, tens: torch.Tensor):
-        return super().to_manifold(tens)
+        return F.normalize(tens, dim=-1)
 
     def dist(self, x: torch.Tensor, y: torch.Tensor):
-        return super().dist(x, y)
+        return torch.acos((x*y).sum(dim=-1).clamp(-1 + 1e-6, 1 - 1e-6))
 
     def radius(self, tens: torch.Tensor):
-        return super().radius(tens)
+        return torch.acos(tens[..., 0].clamp(-1 + 1e-6, 1 - 1e-6))
