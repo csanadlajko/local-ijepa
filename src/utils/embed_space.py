@@ -80,3 +80,45 @@ class RootEmbeddingSpaceHead(nn.Module):
         loss_depth = F.relu(gap).mean()
 
         return logits, {"cls": loss_cls, "parent": loss_parent, "depth": loss_depth}
+
+
+class EuclideanEmbeddingSpaceHead(RootEmbeddingSpaceHead):
+
+    def dist(self, x: torch.Tensor, y: torch.Tensor):
+        return ((x - y) ** 2).sum(-1).add(1e-9).sqrt()
+    
+    def to_manifold(self, tens: torch.Tensor):
+        return tens
+
+    def radius(self, tens: torch.Tensor):
+        return (tens ** 2).sum(-1).add(1e-9).sqrt()
+
+class HyperbolicEmbdeddingSpaceHead(RootEmbeddingSpaceHead):
+
+    def to_manifold(self, tens: torch.Tensor):
+        """Transform a [B, N, D] tensor into lower dimension hyperbolic space"""
+        norm = tens.norm(dim=-1, keepdim=True).clamp_min(1e-6)
+        
+        # expmap -> geodesic distance * direction
+        return torch.tanh(norm) * tens / norm
+
+    def dist(self, x: torch.Tensor, y: torch.Tensor):
+        x_norm = x.norm(dim=-1)
+        y_norm = y.norm(dim=-1)
+        den = ((1 - x_norm ** 2) * (1 - y_norm ** 2)).clamp_min(1e-6)
+        return torch.arccosh((1 + 2 * ((x - y) ** 2).sum(-1) / den).clamp_min(1 + 1e-6))
+
+    def radius(self, tens: torch.Tensor):
+        norm = tens.norm(dim=-1)
+        return 2 * torch.arctanh(norm)
+
+class SphericEmbeddingSpaceHead(RootEmbeddingSpaceHead):
+
+    def to_manifold(self, tens: torch.Tensor):
+        return super().to_manifold(tens)
+
+    def dist(self, x: torch.Tensor, y: torch.Tensor):
+        return super().dist(x, y)
+
+    def radius(self, tens: torch.Tensor):
+        return super().radius(tens)
