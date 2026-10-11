@@ -37,6 +37,10 @@ def parse_jepa_args():
     parser.add_argument("--r_max", help="maximum vector length in the finetuning embedding space (default: 2)", default=2.0, type=float)
     parser.add_argument("--tau", help="tau value when creating logits based on vector distance (default: 1)", default=1.0, type=float)
     parser.add_argument("--margin", help="the super category nodes should be 'margin' closer to the embedding space's root (default: 0.5)", type=float, default=0.5)
+    parser.add_argument("--l_cls", help="lambda value of the cls loss (default: 1.0)", default=1.0, type=float)
+    parser.add_argument("--l_parent", help="lambda value of the parent loss (default: 1.0)", default=1.0, type=float)
+    parser.add_argument("--l_depth", help="lambda value of the depth loss (default: 1.0)", default=1.0, type=float)
+    parser.add_argument("--l_block_loss", help="lambda value of the block CLS loss in the JEPA backbone", default=0.5, type=float)
 
     args = parser.parse_args()
 

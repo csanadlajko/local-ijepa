@@ -74,13 +74,18 @@ if __name__ == "__main__":
         logger=logger
     ).to(device)
 
-    logger.info("Loading pre-trained text tokenizer and encoder...")
-    text_encoder = AutoModelForCausalLM.from_pretrained(args.sentence_encoder).to(device)
-    tokenizer = AutoTokenizer.from_pretrained(args.sentence_encoder)
-    logger.info("Tokenizer and text encoder loaded successfully!")
+    tokenizer, text_encoder = None, None
 
-    if tokenizer.pad_token is None:
-        tokenizer.pad_token = tokenizer.eos_token
+    if args.multimodal_run == "y":
+        logger.info("Loading pre-trained text tokenizer and encoder...")
+        text_encoder = AutoModelForCausalLM.from_pretrained(args.sentence_encoder).to(device)
+        tokenizer = AutoTokenizer.from_pretrained(args.sentence_encoder)
+        logger.info("Tokenizer and text encoder loaded successfully!")
+        if tokenizer.pad_token is None:
+            tokenizer.pad_token = tokenizer.eos_token
+    else:
+        logger.info("Skipping text encoder initialization as multimodal run is not set to true!")
+
 
     predictor = ViTPredictor(
         num_patches=teacher_model.patch_embed.num_patches,
@@ -178,7 +183,7 @@ if __name__ == "__main__":
                 predictor=predictor,
                 momentum=args.momentum,
                 ijepa_loss=model_config["ijepa_loss"],
-                cell_percentage=args.cell_percentage,
+                l_block_loss=args.l_block_loss,
                 device=device,
                 block_proc=block_proc,
                 normal_mask=mask
@@ -214,16 +219,16 @@ if __name__ == "__main__":
                 loader=train_loader,
                 optim_block_predictor=model_config["optim_block_predictor"],
                 predictor=predictor,
-                cell_predictor=None,
                 device=device,
-                cell_mask=cell_mask,
                 block_processor=block_proc,
                 loss_fn=block_pred_loss,
-                cell_percentage=args.cell_percentage,
                 normal_mask=mask,
                 block_predictor=block_predictor,
                 optim_student=model_config["optim_student"],
-                optim_main_pred=model_config["optim_predictor"]
+                optim_main_pred=model_config["optim_predictor"],
+                l_cls=args.l_cls,
+                l_parent=args.l_parent,
+                l_depth=args.l_depth
             )
         accuracy_per_epoch.append(accuracy_epoch)
         cls_loss_per_epoch.append(cls_loss_at_epoch)

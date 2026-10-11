@@ -23,6 +23,10 @@ class RootEmbeddingSpaceHead(nn.Module):
         self.class_nodes = nn.Parameter(0.1 * torch.randn(self.n_classes, proj_dim), requires_grad=True)
         self.category_nodes = nn.Parameter(0.1 * torch.randn(self.n_super, proj_dim), requires_grad=True)
 
+    def no_weight_decay(self):
+        """Points of the embedding space, weight decay would pull them towards the root"""
+        return {"class_nodes", "category_nodes"}
+
     def to_manifold(self, tens: torch.Tensor):
         """Transforms the input tensor into a specific embedding space (euclidean, hyperbolic or spheric)"""
         raise NotImplementedError
