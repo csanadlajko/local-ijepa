@@ -123,6 +123,8 @@ if __name__ == "__main__":
 
     block_predictor.to(device)
 
+    logger.info(f"Finetuning will take place in {args.geometry} geometry")
+
     # block_predictor = BlockTypePredictor(embed_dim=args.embed_dim, num_classes=args.num_block_categories, logger=logger).to(device)
 
     student_model.apply(init_weights)
@@ -194,9 +196,9 @@ if __name__ == "__main__":
         jepa_loss_per_epoch.append(loss_epoch)
 
         if args.debug == "y" and (epoch+1) % 10 == 0:
-            torch.save(student_model.state_dict(), f"{result_folder}/trained_student_jepa_no_mm_{run_identifier}_{epoch+1}ep.pth")
-            torch.save(teacher_model.state_dict(), f"{result_folder}/teacher_model_jepa_no_mm_{run_identifier}_{epoch+1}ep.pth")
-            torch.save(predictor.state_dict(), f"{result_folder}/trained_predictor_jepa_no_mm_{run_identifier}_{epoch+1}ep.pth")
+            torch.save(student_model.state_dict(), f"{result_folder}/trained_student_jepa_{run_identifier}_{epoch+1}ep.pth")
+            torch.save(teacher_model.state_dict(), f"{result_folder}/teacher_model_jepa_{run_identifier}_{epoch+1}ep.pth")
+            torch.save(predictor.state_dict(), f"{result_folder}/trained_predictor_jepa_{run_identifier}_{epoch+1}ep.pth")
 
     block_pred_loss = torch.nn.CrossEntropyLoss().to(device)
 
@@ -234,11 +236,11 @@ if __name__ == "__main__":
         cls_loss_per_epoch.append(cls_loss_at_epoch)
 
         if args.debug == "y" and (epoch+1) % 10 == 0:
-            torch.save(student_model.state_dict(), f"{result_folder}/trained_student_cls_no_mm_{run_identifier}_{epoch+1}ep.pth")
-            torch.save(teacher_model.state_dict(), f"{result_folder}/teacher_model_cls_no_mm_{run_identifier}_{epoch+1}ep.pth")
-            torch.save(predictor.state_dict(), f"{result_folder}/trained_predictor_cls_no_mm_{run_identifier}_{epoch+1}ep.pth")
+            torch.save(student_model.state_dict(), f"{result_folder}/trained_student_{args.geometry}_{run_identifier}_{epoch+1}ep.pth")
+            torch.save(teacher_model.state_dict(), f"{result_folder}/teacher_model_{args.geometry}_{run_identifier}_{epoch+1}ep.pth")
+            torch.save(predictor.state_dict(), f"{result_folder}/trained_predictor_{args.geometry}_{run_identifier}_{epoch+1}ep.pth")
             if args.dataset == "coco":
-                torch.save(block_predictor.state_dict(), f"{result_folder}/trained_block_pred_no_mm_{run_identifier}_{epoch+1}ep.pth")
+                torch.save(block_predictor.state_dict(), f"{result_folder}/trained_block_pred_{args.geometry}_{run_identifier}_{epoch+1}ep.pth")
 
     if args.dataset != "pdl1" and args.dataset != "coco":
         cls_acc = eval_cls(

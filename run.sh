@@ -10,11 +10,11 @@ python3 local_jepa.py \
     --num_heads 8 \
     --num_target 4 \
     --batch_size 16 \
-    --epochs 5 \
-    --lr 0.0003 \
-    --finetune_lr 0.001 \
+    --epochs 20 \
+    --lr 0.0001 \
+    --finetune_lr 0.0005 \
     --num_classes 80 \
     --num_block_categories 81 \
     --multimodal_run n \
     --debug y \
-    --geometry euclidean
+    --geometry hyperbolic
