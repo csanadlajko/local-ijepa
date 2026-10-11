@@ -32,6 +32,11 @@ def parse_jepa_args():
     parser.add_argument("--coco_test_folder", help="folder of coco test images (default: '')", default="", type=str)
     parser.add_argument("--coco_train_annotation", help="path of the coco train annotation json (default: '')", default="", type=str)
     parser.add_argument("--coco_test_annotation", help="path of the coco test annotation json (default: '')", default="", type=str)
+    parser.add_argument("--geometry", help="geometry of the finetuning stage. value most be one of: euclidean, hyperbolic, spheric. defaults to euclidean", default="euclidean", type=str)
+    parser.add_argument("--finetune_embed_dim", help="embedding dimension of the finetuning stage (default: 16)", default=16, type=int)
+    parser.add_argument("--r_max", help="maximum vector length in the finetuning embedding space (default: 2)", default=2.0, type=float)
+    parser.add_argument("--tau", help="tau value when creating logits based on vector distance (default: 1)", default=1.0, type=float)
+    parser.add_argument("--margin", help="the super category nodes should be 'margin' closer to the embedding space's root (default: 0.5)", type=float, default=0.5)
 
     args = parser.parse_args()
 

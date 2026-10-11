@@ -1,5 +1,7 @@
 import torch
 import torch.nn as nn
+from ..utils.embed_space import EuclideanEmbeddingSpaceHead, HyperbolicEmbeddingSpaceHead, SphericEmbeddingSpaceHead
+
 
 def get_model_config(student_model, predictor, learning_rate, epochs, block_predictor, finetune_lr=0.005):
 
@@ -60,3 +62,35 @@ def create_loss_weights(occ_map):
     class_weights = class_weights / class_weights.sum() * 90
     extended = torch.cat([class_weights, class_weights[:1]])
     return extended
+
+def create_finetune_model(geometry: str, jepa_embed_dim: int, class_parent: list[int], proj_dim: int, r_max: int, tau: int, margin: int):
+    match geometry.lower():
+        case "euclidean":
+            return EuclideanEmbeddingSpaceHead(
+                embed_dim=jepa_embed_dim,
+                class_parent=class_parent,
+                proj_dim=proj_dim,
+                r_max=r_max,
+                tau=tau,
+                margin=margin
+            )
+        case "hyperbolic":
+            return HyperbolicEmbeddingSpaceHead(
+                embed_dim=jepa_embed_dim,
+                class_parent=class_parent,
+                proj_dim=proj_dim,
+                r_max=r_max,
+                tau=tau,
+                margin=margin
+            )
+        case "spheric":
+            return SphericEmbeddingSpaceHead(
+                embed_dim=jepa_embed_dim,
+                class_parent=class_parent,
+                proj_dim=proj_dim,
+                r_max=r_max,
+                tau=tau,
+                margin=margin
+            )
+        case _:
+            return None

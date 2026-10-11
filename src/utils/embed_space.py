@@ -93,7 +93,7 @@ class EuclideanEmbeddingSpaceHead(RootEmbeddingSpaceHead):
     def radius(self, tens: torch.Tensor):
         return (tens ** 2).sum(-1).add(1e-9).sqrt()
 
-class HyperbolicEmbdeddingSpaceHead(RootEmbeddingSpaceHead):
+class HyperbolicEmbeddingSpaceHead(RootEmbeddingSpaceHead):
 
     def to_manifold(self, tens: torch.Tensor):
         """Transform a [B, N, D] tensor into lower dimension hyperbolic space"""

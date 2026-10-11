@@ -22,6 +22,10 @@ class COCODataset(Dataset):
         self.images = {f["id"]: f["file_name"] for f in coco_data["images"]}
         self.annotations = {}
         self.class_occ_map = {}
+        super_categ_map = self._create_superctageory_map(coco_data["categories"])
+
+        # len(80) list containing supercategory ids for every class
+        self.class_parent = [super_categ_map[item["supercategory"]] for item in coco_data["categories"]]
         for ann in coco_data["annotations"]:
             # connect annotations to images
             img_id = ann["image_id"]
@@ -79,3 +83,12 @@ class COCODataset(Dataset):
         images = torch.stack([image[0] for image in batch])
         annotations = [ann[1] for ann in batch]
         return images, annotations
+
+    def _create_superctageory_map(self, categories) -> dict[str, int]:
+        categ_id: int = 0
+        categ_map: dict[str, int] = {}
+        for item in categories:
+            if item["supercategory"] not in categ_map:
+                categ_map[item["supercategory"]] = categ_id
+                categ_id+=1
+        return categ_map

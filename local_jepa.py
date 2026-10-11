@@ -1,8 +1,7 @@
 from src.parser.parser import parse_jepa_args
 from src.models.vit import VisionTransformer
 from src.models.predictor import (
-    ViTPredictor,
-    BlockTypePredictor
+    ViTPredictor
 )
 from src.train.train_ijepa import (
     train, # main JEPA training loop for creating the representational space
@@ -16,7 +15,7 @@ from src.train.train_local_jepa import (
     eval_block_predictor # evaluate finetuned JEPA model
 )
 from src.data_preprocess.dataloader import load_dataset
-from src.utils.config_ijepa import get_model_config, init_weights
+from src.utils.config_ijepa import get_model_config, init_weights, create_finetune_model
 from src.utils.masking import Mask, CellMask
 from src.utils.patch_metadata import PatchProcesser, BlockProcessor
 from src.utils.logging_module import logger
@@ -104,7 +103,22 @@ if __name__ == "__main__":
 
     block_proc = BlockProcessor(args.patch_size, args.image_size, logger=logger)
 
-    block_predictor = BlockTypePredictor(embed_dim=args.embed_dim, num_classes=args.num_block_categories, logger=logger).to(device)
+    block_predictor = create_finetune_model(
+        geometry=args.geometry,
+        jepa_embed_dim=args.embed_dim,
+        proj_dim=args.finetune_embed_dim,
+        tau=args.tau,
+        r_max=args.r_max,
+        margin=args.margin,
+        class_parent=datasets["class_parent"]
+    )
+
+    if not block_predictor:
+        raise ValueError("Block predictor couldn't be initialized. The project only supports the COCO dataset, and these embedding geometries: [euclidean, hyperbolic, spheric]")
+
+    block_predictor.to(device)
+
+    # block_predictor = BlockTypePredictor(embed_dim=args.embed_dim, num_classes=args.num_block_categories, logger=logger).to(device)
 
     student_model.apply(init_weights)
     predictor.apply(init_weights)
