@@ -1,7 +1,9 @@
+echo "executing euclidean run"
+
 python3 local_jepa.py \
     --dataset coco \
     --coco_train_folder /mnt/c/Users/csanadlajko/Documents/suli/tdk/train2017/train2017/ --coco_train_annotation /mnt/c/Users/csanadlajko/Documents/suli/tdk/annotations_trainval2017/annotations/instances_train2017.json \
-    --result_folder "$(pwd)" \
+    --result_folder "$(pwd)/results/euclidean" \
     --image_size 256 \
     --patch_size 16 \
     --embed_dim 256 \
@@ -17,4 +19,4 @@ python3 local_jepa.py \
     --num_block_categories 81 \
     --multimodal_run n \
     --debug y \
-    --geometry hyperbolic
+    --geometry euclidean
