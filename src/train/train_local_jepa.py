@@ -27,7 +27,7 @@ def train_local_jepa(
     total_loss = 0.0
     num_batches = 0
 
-    bar = tqdm(total=315)
+    bar = tqdm(total=len(loader))
 
     for i, (images, annotation) in enumerate(loader):
         ## annotation -> len(batch_size) list containing annotations for each image
@@ -91,8 +91,6 @@ def train_local_jepa(
         total_loss += sum_loss.item()
         num_batches += 1
         bar.update(1)
-        if i == 315:
-            break
 
     avg_loss = total_loss / num_batches if num_batches > 0 else 0.0
     bar.close()
@@ -123,7 +121,7 @@ def train_block_predictor(
     num_batches = 0
     n_valid = 0
 
-    bar = tqdm(total=315)
+    bar = tqdm(total=len(loader))
 
     epoch_topk_map = {
         "top1": 0,
@@ -195,10 +193,7 @@ def train_block_predictor(
             student_mod.logger.info(f"running top1 acc: {epoch_topk_map['top1'] / max(n_valid, 1) * 100:.2f}%")
         total_loss += loss_all.item()
         num_batches += 1
-        # running_acc += curr_acc
         bar.update(1)
-        if i == 315:
-            break
 
     for key in epoch_topk_map.keys():
         epoch_topk_map[key] = epoch_topk_map[key] / max(n_valid, 1) * 100
