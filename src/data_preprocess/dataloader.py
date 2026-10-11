@@ -201,7 +201,7 @@ def load_coco_dataset(input_dir: str, annotation_json: str, reverse):
     train_size: int = int(len(full_dataset_train)*0.8)
     test_size: int = len(full_dataset_train) - train_size
 
-    train_data, test_indices = random_split(full_dataset_train, [train_size, test_size]).manual_seed(0)
+    train_data, test_indices = random_split(full_dataset_train, [train_size, test_size], generator=torch.Generator().manual_seed(0))
 
     test_data = torch.utils.data.Subset(full_dataset_test, test_indices.indices)
 
