@@ -163,7 +163,11 @@ def train_block_predictor(
             local_cls=False
         )
 
-        logits, parts = block_predictor.losses(block_cls_tokens, tens_int_classes)
+        tens_int_flat = tens_int_classes.flatten()
+
+        class_weights = compute_weights(tens_int_flat[tens_int_flat != 80], 80)
+
+        logits, parts = block_predictor.losses(block_cls_tokens, tens_int_classes, class_weights=class_weights)
 
         loss_all = l_cls * parts["cls"] + l_parent * parts["parent"] + l_depth * parts["depth"]
 
@@ -179,7 +183,6 @@ def train_block_predictor(
 
         # [B*N, N_CLASSES] and [B*N], background blocks removed
         logits_flat = logits.detach().flatten(0, 1)
-        tens_int_flat = tens_int_classes.flatten()
         valid = tens_int_flat != 80
         logits_flat, tens_int_flat = logits_flat[valid], tens_int_flat[valid]
 

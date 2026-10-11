@@ -58,7 +58,7 @@ class RootEmbeddingSpaceHead(nn.Module):
         cls_proj, class_nodes, _ = self.points(block_cls)
         return self.class_logits(cls_proj, class_nodes)
 
-    def losses(self, block_cls: torch.Tensor, labels: torch.Tensor):
+    def losses(self, block_cls: torch.Tensor, labels: torch.Tensor, class_weights = None):
         # point embeddings
         cls_proj, class_nodes, category_nodes = self.points(block_cls)
 
@@ -68,7 +68,7 @@ class RootEmbeddingSpaceHead(nn.Module):
         logits = self.class_logits(cls_proj, class_nodes)
 
         # CE on [80, 80] and [80] ([16, 5] label tensor flattened, classes for every block in the batch) tensor
-        loss_cls = F.cross_entropy(logits.flatten(0, 1), labels.flatten(), ignore_index=self.n_classes)
+        loss_cls = F.cross_entropy(logits.flatten(0, 1), labels.flatten(), weight=class_weights, ignore_index=self.n_classes)
 
         # distance between [80, 1, 16] and [1, 12, 16]
         # return [80, 12, 16] ([CL, CA, D]), for every class CL, the distance between category CA is D -> creates logits as well 
