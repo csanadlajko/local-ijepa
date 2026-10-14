@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import math
 
 class RootEmbeddingSpaceHead(nn.Module):
 
@@ -11,7 +12,7 @@ class RootEmbeddingSpaceHead(nn.Module):
         self.r_max = r_max
         self.margin = margin
 
-        self.tau = tau
+        self.log_tau = nn.Parameter(torch.tensor(math.log(tau)))
 
         # len(n_class) list where every item represents the current class's super category
         self.register_buffer("class_parent", torch.as_tensor(class_parent, dtype=torch.long))
@@ -45,6 +46,9 @@ class RootEmbeddingSpaceHead(nn.Module):
 
     def points(self, block_cls: torch.Tensor):
         # input is [B, N, D] , a batch of region CLS tokens
+        # clipping CLS tokens could potentially be dangerous for hyperbolic spaces
+        # as longer vectors become extremely close / equal to 1 in the c=1 Poincare manifold
+        # but clipping does not pay attention to the length of the tensor if its greater than 2 -> value loss
         cls_proj = self.to_manifold(self.clip(self.embed_proj(block_cls)))
         class_nodes_proj = self.to_manifold(self.clip(self.class_nodes))
         category_nodes_proj = self.to_manifold(self.clip(self.category_nodes))
@@ -52,7 +56,8 @@ class RootEmbeddingSpaceHead(nn.Module):
         return cls_proj, class_nodes_proj, category_nodes_proj
 
     def class_logits(self, cls: torch.Tensor, class_nodes: torch.Tensor):
-        return -self.dist(cls.unsqueeze(-2), class_nodes) ** 2 / self.tau
+        tau = self.log_tau.clamp(math.log(0.01), math.log(100.0)).exp()
+        return -self.dist(cls.unsqueeze(-2), class_nodes) ** 2 / tau
 
     def forward(self, block_cls: torch.Tensor):
         cls_proj, class_nodes, _ = self.points(block_cls)
