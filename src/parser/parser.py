@@ -41,6 +41,8 @@ def parse_jepa_args():
     parser.add_argument("--l_parent", help="lambda value of the parent loss (default: 1.0)", default=1.0, type=float)
     parser.add_argument("--l_depth", help="lambda value of the depth loss (default: 1.0)", default=1.0, type=float)
     parser.add_argument("--l_block_loss", help="lambda value of the block CLS loss in the JEPA backbone", default=0.5, type=float)
+    parser.add_argument("--skip_backbone", help="skips backbone training and only runs finetuning phase (default: n)", type=str, default="n")
+    parser.add_argument("--load_backbone", help="loads pretrained backbone models for the corresponding geometry (default: n)", type=str, default="n")
 
     args = parser.parse_args()
 

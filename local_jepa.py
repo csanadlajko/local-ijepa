@@ -154,53 +154,71 @@ if __name__ == "__main__":
     else:
         logger.info(f"Starting training normal I-JEPA mode for {args.epochs} epoch(s)!")
 
-    for epoch in range(args.epochs):
+    if args.skip_backbone == "n":
+        for epoch in range(args.epochs):
 
-        logger.info(f"=== EPOCH {epoch + 1}/{args.epochs} ===")
+            logger.info(f"=== EPOCH {epoch + 1}/{args.epochs} ===")
 
-        if args.dataset != "pdl1" and args.dataset != "coco":
-            ## train JEPA on regular classification tasks with cls token
-            loss_epoch = train(
-                teacher_mod=teacher_model,
-                student_mod=student_model,
-                loader=train_loader,
-                optim_student=model_config["optim_student"],
-                optim_predictor=model_config["optim_predictor"],
-                predictor=predictor,
-                momentum=args.momentum,
-                ijepa_loss=model_config["ijepa_loss"],
-                device=device,
-                mask=mask,
-                multimodal=args.multimodal_run,
-                debug=args.debug
-            )
-        else:
-            ## train JEPA on COCO with local representation classification
-            loss_epoch = train_local_jepa(
-                teacher_mod=teacher_model,
-                student_mod=student_model,
-                loader=train_loader,
-                optim_student=model_config["optim_student"],
-                optim_predictor=model_config["optim_predictor"],
-                predictor=predictor,
-                momentum=args.momentum,
-                ijepa_loss=model_config["ijepa_loss"],
-                l_block_loss=args.l_block_loss,
-                device=device,
-                block_proc=block_proc,
-                normal_mask=mask
-            )
+            if args.dataset != "pdl1" and args.dataset != "coco":
+                ## train JEPA on regular classification tasks with cls token
+                loss_epoch = train(
+                    teacher_mod=teacher_model,
+                    student_mod=student_model,
+                    loader=train_loader,
+                    optim_student=model_config["optim_student"],
+                    optim_predictor=model_config["optim_predictor"],
+                    predictor=predictor,
+                    momentum=args.momentum,
+                    ijepa_loss=model_config["ijepa_loss"],
+                    device=device,
+                    mask=mask,
+                    multimodal=args.multimodal_run,
+                    debug=args.debug
+                )
+            else:
+                ## train JEPA on COCO with local representation classification
+                loss_epoch = train_local_jepa(
+                    teacher_mod=teacher_model,
+                    student_mod=student_model,
+                    loader=train_loader,
+                    optim_student=model_config["optim_student"],
+                    optim_predictor=model_config["optim_predictor"],
+                    predictor=predictor,
+                    momentum=args.momentum,
+                    ijepa_loss=model_config["ijepa_loss"],
+                    l_block_loss=args.l_block_loss,
+                    device=device,
+                    block_proc=block_proc,
+                    normal_mask=mask
+                )
 
-        if (epoch+1) % 10 == 0:
-            student_scheduler.step()
-        jepa_loss_per_epoch.append(loss_epoch)
+            if (epoch+1) % 10 == 0:
+                student_scheduler.step()
+            jepa_loss_per_epoch.append(loss_epoch)
 
-        if args.debug == "y" and (epoch+1) % 10 == 0:
-            torch.save(student_model.state_dict(), f"{result_folder}/trained_student_jepa_{run_identifier}_{epoch+1}ep.pth")
-            torch.save(teacher_model.state_dict(), f"{result_folder}/teacher_model_jepa_{run_identifier}_{epoch+1}ep.pth")
-            torch.save(predictor.state_dict(), f"{result_folder}/trained_predictor_jepa_{run_identifier}_{epoch+1}ep.pth")
+            if args.debug == "y" and (epoch+1) % 10 == 0:
+                torch.save(student_model.state_dict(), f"{result_folder}/trained_student_jepa_{run_identifier}_{epoch+1}ep.pth")
+                torch.save(teacher_model.state_dict(), f"{result_folder}/teacher_model_jepa_{run_identifier}_{epoch+1}ep.pth")
+                torch.save(predictor.state_dict(), f"{result_folder}/trained_predictor_jepa_{run_identifier}_{epoch+1}ep.pth")
+
+    else:
+        logger.info(f"Skipping JEPA backbone training as skip_backbone parameter is set to {args.skip_backbone}")
 
     block_pred_loss = torch.nn.CrossEntropyLoss().to(device)
+
+    if args.load_backbone == "y":
+        match args.geometry.lower():
+            case "euclidean":
+                logger.info("loading pretrained euclidean models from results/euclidean")
+                teacher_model.load_state_dict(torch.load("results/euclidean/teacher_model_jepa_2026-10-11T223242Z_20ep.pth", map_location=device))
+                student_model.load_state_dict(torch.load("results/euclidean/trained_student_jepa_2026-10-11T223242Z_20ep.pth", map_location=device))
+                predictor.load_state_dict(torch.load("results/euclidean/trained_predictor_jepa_2026-10-11T223242Z_20ep.pth", map_location=device))
+
+            case "hyperbolic":
+                logger.info("loading pretrained hyperbolic models from results/hyperbolic")
+                teacher_model.load_state_dict(torch.load("results/hyperbolic/teacher_model_jepa_2026-10-11T223332Z_20ep.pth", map_location=device))
+                student_model.load_state_dict(torch.load("results/hyperbolic/trained_student_jepa_2026-10-11T223332Z_20ep.pth", map_location=device))
+                predictor.load_state_dict(torch.load("results/hyperbolic/trained_predictor_jepa_2026-10-11T223332Z_20ep.pth", map_location=device))
 
     for epoch in range(args.epochs):
         logger.info(f"=== Classification finetuning EPOCH {epoch+1}/{args.epochs} ===")

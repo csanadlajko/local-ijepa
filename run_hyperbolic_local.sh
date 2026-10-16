@@ -20,4 +20,6 @@ python3 local_jepa.py \
     --num_block_categories 81 \
     --multimodal_run n \
     --debug y \
-    --geometry hyperbolic
+    --geometry hyperbolic \
+    --skip_backbone y \
+    --load_backbone y
