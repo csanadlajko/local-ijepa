@@ -13,6 +13,7 @@ class RootEmbeddingSpaceHead(nn.Module):
         self.margin = margin
 
         self.log_tau = nn.Parameter(torch.tensor(math.log(tau)))
+        self.tau = tau
 
         # len(n_class) list where every item represents the current class's super category
         self.register_buffer("class_parent", torch.as_tensor(class_parent, dtype=torch.long))
@@ -44,14 +45,21 @@ class RootEmbeddingSpaceHead(nn.Module):
         norm = tens.norm(dim=-1, keepdim=True).clamp_min(1e-6)
         return tens * (self.r_max / norm).clamp(max=1.0)
 
+    def bound(self, tens: torch.Tensor):
+        norm = tens.norm(dim=-1, keepdim=True).clamp_min(1e-6)
+        # in torch.tanh(norm / self.r_max) -> the self.r_max item might be replaced with a parameter
+        targ = self.r_max * torch.tanh(norm / self.r_max)
+        return tens * (targ / norm)
+
     def points(self, block_cls: torch.Tensor):
         # input is [B, N, D] , a batch of region CLS tokens
         # clipping CLS tokens could potentially be dangerous for hyperbolic spaces
         # as longer vectors become extremely close / equal to 1 in the c=1 Poincare manifold
         # but clipping does not pay attention to the length of the tensor if its greater than 2 -> value loss
-        cls_proj = self.to_manifold(self.clip(self.embed_proj(block_cls)))
-        class_nodes_proj = self.to_manifold(self.clip(self.class_nodes))
-        category_nodes_proj = self.to_manifold(self.clip(self.category_nodes))
+        # solution: bounding with tanh(x) where y is in [0; 4[ interval
+        cls_proj = self.to_manifold(self.bound(self.embed_proj(block_cls)))
+        class_nodes_proj = self.to_manifold(self.bound(self.class_nodes))
+        category_nodes_proj = self.to_manifold(self.bound(self.category_nodes))
 
         return cls_proj, class_nodes_proj, category_nodes_proj
 
