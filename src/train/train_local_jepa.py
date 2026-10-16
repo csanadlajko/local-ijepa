@@ -189,8 +189,6 @@ def train_block_predictor(
             topk_preds = logits_flat.topk(k, dim=1).indices
             epoch_topk_map[f"top{k}"] += (topk_preds == tens_int_flat.view(-1, 1)).any(dim=1).sum().item()
 
-        if (i+1) % 100 == 0:
-            student_mod.logger.info(f"running top1 acc: {epoch_topk_map['top1'] / max(n_valid, 1) * 100:.2f}%")
         total_loss += loss_all.item()
         num_batches += 1
         bar.update(1)

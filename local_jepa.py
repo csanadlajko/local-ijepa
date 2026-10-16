@@ -213,12 +213,14 @@ if __name__ == "__main__":
                 teacher_model.load_state_dict(torch.load("results/euclidean/teacher_model_jepa_2026-10-11T223242Z_20ep.pth", map_location=device))
                 student_model.load_state_dict(torch.load("results/euclidean/trained_student_jepa_2026-10-11T223242Z_20ep.pth", map_location=device))
                 predictor.load_state_dict(torch.load("results/euclidean/trained_predictor_jepa_2026-10-11T223242Z_20ep.pth", map_location=device))
+                logger.info("pretrained models lodaded successfully!")
 
             case "hyperbolic":
                 logger.info("loading pretrained hyperbolic models from results/hyperbolic")
                 teacher_model.load_state_dict(torch.load("results/hyperbolic/teacher_model_jepa_2026-10-11T223332Z_20ep.pth", map_location=device))
                 student_model.load_state_dict(torch.load("results/hyperbolic/trained_student_jepa_2026-10-11T223332Z_20ep.pth", map_location=device))
                 predictor.load_state_dict(torch.load("results/hyperbolic/trained_predictor_jepa_2026-10-11T223332Z_20ep.pth", map_location=device))
+                logger.info("pretrained models loaded successdully!")
 
     for epoch in range(args.epochs):
         logger.info(f"=== Classification finetuning EPOCH {epoch+1}/{args.epochs} ===")
