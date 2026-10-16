@@ -15,6 +15,9 @@ class RootEmbeddingSpaceHead(nn.Module):
         self.log_tau = nn.Parameter(torch.tensor(math.log(tau)))
         self.tau = tau
 
+        expected = math.sqrt(proj_dim * embed_dim * 2 / (proj_dim + embed_dim))
+        self.feat_scale = 1.0 / expected
+
         # len(n_class) list where every item represents the current class's super category
         self.register_buffer("class_parent", torch.as_tensor(class_parent, dtype=torch.long))
 
@@ -57,7 +60,7 @@ class RootEmbeddingSpaceHead(nn.Module):
         # as longer vectors become extremely close / equal to 1 in the c=1 Poincare manifold
         # but clipping does not pay attention to the length of the tensor if its greater than 2 -> value loss
         # solution: bounding with tanh(x) where y is in [0; 4[ interval
-        cls_proj = self.to_manifold(self.bound(self.embed_proj(block_cls)))
+        cls_proj = self.to_manifold(self.bound(self.feat_scale * self.embed_proj(block_cls)))
         class_nodes_proj = self.to_manifold(self.bound(self.class_nodes))
         category_nodes_proj = self.to_manifold(self.bound(self.category_nodes))
 

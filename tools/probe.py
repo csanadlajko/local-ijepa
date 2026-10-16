@@ -94,7 +94,7 @@ def predict(model, head, x):
 
 def geometry_stats(model, x):
     with torch.no_grad():
-        z = model.to_manifold(model.bound(model.embed_proj(x)))
+        z = model.to_manifold(model.bound(model.feat_scale * model.embed_proj(x)))
         p = model.to_manifold(model.bound(model.class_nodes))
         s = model.to_manifold(model.bound(model.category_nodes))
         violations = (model.radius(p) <= model.radius(s)[model.class_parent]).float().mean().item() * 100
