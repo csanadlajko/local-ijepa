@@ -2,6 +2,7 @@ import numpy as np
 from PIL import Image
 from torch.utils.data import Dataset
 
+
 class CIFAR10dot1Dataset(Dataset):
 
     def __init__(self, data_path, label_path, transform=None):

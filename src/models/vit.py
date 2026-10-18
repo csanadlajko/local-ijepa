@@ -1,7 +1,9 @@
-import torch.nn as nn
 import torch
+from torch import nn
+
 from ..utils.masking import apply_mask
 from ..utils.pos_encoding import sinusoidal_pos_embedding2d
+
 
 class MLP(nn.Module):
     

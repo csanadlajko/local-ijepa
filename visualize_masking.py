@@ -1,14 +1,19 @@
-import torch
+
+### DEPRACATED SCRIPT, WILL BE UPDATE IN FUTURE VERSIONS ###
+
+import json
+
 import matplotlib.pyplot as plt
 import numpy as np
-from src.utils.masking import Mask
+import torch
+from transformers import AutoModelForCausalLM, AutoTokenizer
+
 from src.data_preprocess.dataloader import load_coco_dataset
-from src.parser.parser import parse_jepa_args
-from src.utils.patch_metadata import BlockProcessor
-from src.models.predictor import ViTPredictor, BlockTypePredictor
+from src.models.predictor import BlockTypePredictor, ViTPredictor
 from src.models.vit import VisionTransformer
-from transformers import AutoTokenizer, AutoModelForCausalLM
-import json
+from src.parser.parser import parse_jepa_args
+from src.utils.masking import Mask
+from src.utils.patch_metadata import BlockProcessor
 
 args = parse_jepa_args()
 

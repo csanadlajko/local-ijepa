@@ -1,10 +1,12 @@
-import os
-from PIL import Image
 import json
-import torch
-from src.parser.parser import parse_jepa_args
-from torch.utils.data import Dataset
+import os
 from abc import abstractmethod
+
+import torch
+from PIL import Image
+from torch.utils.data import Dataset
+
+from src.parser.parser import parse_jepa_args
 
 args = parse_jepa_args()
 

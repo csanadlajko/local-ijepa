@@ -1,16 +1,18 @@
 import math
-from multiprocessing import Value
-import torch
-from src.parser.parser import parse_jepa_args
-from typing import Any
 import random
+from multiprocessing import Value
+from typing import Any
+
+import torch
 import torch.nn.functional as F
+
+from src.parser.parser import parse_jepa_args
 
 args = parse_jepa_args()
 
 DEBUG = True if args.debug == "y" else False
 
-class CellMask(object):
+class CellMask:
 
     """
     Mask a cell by the following logic: \n
@@ -107,7 +109,7 @@ class CellMask(object):
         }
 
 
-class Mask(object):
+class Mask:
     
     def __init__(
         self,
@@ -166,8 +168,8 @@ class Mask(object):
         min_asp_ratio, max_asp_ratio = ascpect_ratio_scale
         aspect_ratio = min_asp_ratio + v * (max_asp_ratio - min_asp_ratio)
         
-        h = int(round(math.sqrt((num_patches * aspect_ratio))))
-        w = int(round(math.sqrt((num_patches / aspect_ratio))))
+        h = int(round(math.sqrt(num_patches * aspect_ratio)))
+        w = int(round(math.sqrt(num_patches / aspect_ratio)))
         h = min(h, self.height - 1)
         w = min(w, self.width - 1)
         h = max(h, 1)

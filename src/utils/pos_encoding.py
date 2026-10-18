@@ -2,6 +2,7 @@
 
 import torch
 
+
 def get_x_positions(num_patches, start_idx=0):
     num_patches_ = int(num_patches ** 0.5) # number of patches in the x dimension
 

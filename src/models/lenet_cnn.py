@@ -1,9 +1,12 @@
-import torch.nn as nn
-import torch
-from local_jepa import get_dataset
-from ..parser.parser import parse_jepa_args
-import matplotlib.pyplot as plt
 import datetime
+
+import matplotlib.pyplot as plt
+import torch
+from torch import nn
+
+from local_jepa import get_dataset
+
+from ..parser.parser import parse_jepa_args
 
 args = parse_jepa_args()
 
@@ -19,7 +22,7 @@ run_identifier: str = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
 class LeNet(nn.Module):
 
     def __init__(self):
-        super(LeNet, self).__init__()
+        super().__init__()
 
         self.cnnmodel = nn.Sequential(
             nn.Conv2d(3, 6, 5),

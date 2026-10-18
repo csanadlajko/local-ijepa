@@ -1,6 +1,7 @@
-import torch
-from typing import Any
 import json
+from typing import Any
+
+import torch
 
 ## ntc: non tumor cell
 ## ni (no information): no class in the current patch
@@ -60,7 +61,7 @@ PATCH_DECODE_MAP: dict[str, str] = {
     "7": "1_2"
 }
 
-class PatchProcesser(object):
+class PatchProcesser:
 
     # lowest abstarction level - patch level
     PATCH_DATA_MAP: dict[str, int] = {
@@ -166,7 +167,7 @@ def get_block_class(all_patch_data: torch.Tensor, block_indices: torch.Tensor, b
     # return corresponding summary class integer
     return torch.tensor([BLOCK_DATA_MAP[classlist_string]], device=all_patch_data.device)
 
-class BlockProcessor(object):
+class BlockProcessor:
 
     def __init__(self, patch_size, image_size, logger):
         self.patch_size = patch_size

@@ -1,6 +1,11 @@
 import torch
-import torch.nn as nn
-from ..utils.embed_space import EuclideanEmbeddingSpaceHead, HyperbolicEmbeddingSpaceHead, SphericEmbeddingSpaceHead
+from torch import nn
+
+from ..utils.embed_space import (
+    EuclideanEmbeddingSpaceHead,
+    HyperbolicEmbeddingSpaceHead,
+    SphericEmbeddingSpaceHead,
+)
 
 
 def param_groups(model, weight_decay, no_decay=()):
