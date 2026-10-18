@@ -1,4 +1,4 @@
-# Dockerfile for linter pipeline
+# Dockerfile for linter pipeline, not for JEPA training execution!
 
 FROM python:3.14-alpine3.23
 

@@ -180,10 +180,11 @@ def load_dataset(dataset_name: str, logger, input_folder: str = "", reverse: str
         datasets["test_loader"] = test_loader
     elif dataset_name == "coco":
         logger.info("Loading COCO dataset...")
-        train_loader, test_loader, occ_map = load_coco_dataset(args.coco_train_folder, args.coco_train_annotation, reverse)
+        train_loader, test_loader, occ_map, class_parent = load_coco_dataset(args.coco_train_folder, args.coco_train_annotation, reverse)
         datasets["train_loader"] = train_loader
         datasets["test_loader"] = test_loader
         datasets["occ_map"] = occ_map
+        datasets["class_parent"] = class_parent
     else:
         logger.error("Provided dataset not found, throwing exception...")
         datasets["error"] = "Dataset has not been registered yet for JEPA model!"
@@ -200,7 +201,7 @@ def load_coco_dataset(input_dir: str, annotation_json: str, reverse):
     train_size: int = int(len(full_dataset_train)*0.8)
     test_size: int = len(full_dataset_train) - train_size
 
-    train_data, test_indices = random_split(full_dataset_train, [train_size, test_size])
+    train_data, test_indices = random_split(full_dataset_train, [train_size, test_size], generator=torch.Generator().manual_seed(0))
 
     test_data = torch.utils.data.Subset(full_dataset_test, test_indices.indices)
 
@@ -217,4 +218,4 @@ def load_coco_dataset(input_dir: str, annotation_json: str, reverse):
         collate_fn=COCODataset.collate_fn
     )
     
-    return train_loader, test_loader, full_dataset_train.class_occ_map
+    return train_loader, test_loader, full_dataset_train.class_occ_map, full_dataset_train.class_parent

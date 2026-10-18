@@ -17,7 +17,7 @@ def train_local_jepa(
         device,
         block_proc,
         normal_mask,
-        cell_percentage=20
+        l_block_loss
     ):
     
     teacher_mod.eval()
@@ -27,7 +27,7 @@ def train_local_jepa(
     total_loss = 0.0
     num_batches = 0
 
-    bar = tqdm(total=315)
+    bar = tqdm(total=len(loader))
 
     for i, (images, annotation) in enumerate(loader):
         ## annotation -> len(batch_size) list containing annotations for each image
@@ -79,7 +79,7 @@ def train_local_jepa(
 
         loss_curr = ijepa_loss(predicted_target_tokens, teacher_target_tokens)
 
-        sum_loss = loss_curr + (0.7 * loss_cls)
+        sum_loss = loss_curr + (l_block_loss * loss_cls)
 
         sum_loss.backward()
         
@@ -91,8 +91,6 @@ def train_local_jepa(
         total_loss += sum_loss.item()
         num_batches += 1
         bar.update(1)
-        if i == 315:
-            break
 
     avg_loss = total_loss / num_batches if num_batches > 0 else 0.0
     bar.close()
@@ -104,16 +102,16 @@ def train_block_predictor(
         loader,
         optim_block_predictor,
         predictor,
-        cell_predictor,
         device,
-        cell_mask,
         block_processor,
         loss_fn,
         normal_mask,
         block_predictor,
         optim_student,
         optim_main_pred,
-        cell_percentage=20
+        l_cls,
+        l_parent,
+        l_depth
     ):
     block_predictor.train()
     student_mod.train()
@@ -121,9 +119,9 @@ def train_block_predictor(
 
     total_loss = 0.0
     num_batches = 0
-    running_acc = 0.0
+    n_valid = 0
 
-    bar = tqdm(total=315)
+    bar = tqdm(total=len(loader))
 
     epoch_topk_map = {
         "top1": 0,
@@ -163,21 +161,13 @@ def train_block_predictor(
             local_cls=False
         )
 
-        ## average loss of all predicted target values
-        # target instance mask is list[list[torch.Tensor]]
+        tens_int_flat = tens_int_classes.flatten()
 
-        pred_classes = block_predictor(
-            block_cls_tokens
-        )
+        class_weights = compute_weights(tens_int_flat[tens_int_flat != 80], 80)
 
-        # transform into [B*target_blocks, num_classes]
-        pred_classes_flat = pred_classes.view(-1, 81)
+        logits, parts = block_predictor.losses(block_cls_tokens, tens_int_classes, class_weights=class_weights)
 
-        # transform into [B*target_blocks]
-        tens_int_flat = tens_int_classes.view(-1)
-        weights = compute_weights(tens_int_flat, num_classes=80)
-        crit = torch.nn.CrossEntropyLoss(weight=weights,ignore_index=80).to(pred_classes.device)
-        loss_all = crit(pred_classes_flat, tens_int_flat)
+        loss_all = l_cls * parts["cls"] + l_parent * parts["parent"] + l_depth * parts["depth"]
 
         optim_block_predictor.zero_grad()
         optim_main_pred.zero_grad()
@@ -188,29 +178,26 @@ def train_block_predictor(
         optim_block_predictor.step()
         optim_main_pred.step()
         optim_student.step()
-        pred_labels = pred_classes_flat.argmax(dim=1)
-        correct = (pred_labels == tens_int_flat)
-        curr_acc = correct.sum().item() / correct.numel()
-        if (i+1) % 100 == 0:
-            for k in range(1, 6):
-                topk_preds = pred_classes_flat.topk(k, dim=1).indices
-                tens_int_flat_exp = tens_int_flat.view(-1, 1)
-                correct_topk = (topk_preds == tens_int_flat_exp).any(dim=1)
-                topk_acc = correct_topk.float().mean().item()
-                student_mod.logger.info(f"top k acc at k={k} is {topk_acc*100:.2f}")
-                epoch_topk_map[f"top{k}"] += topk_acc*100
+
+        # [B*N, N_CLASSES] and [B*N], background blocks removed
+        logits_flat = logits.detach().flatten(0, 1)
+        valid = tens_int_flat != 80
+        logits_flat, tens_int_flat = logits_flat[valid], tens_int_flat[valid]
+
+        n_valid += tens_int_flat.numel()
+        for k in range(1, 6):
+            topk_preds = logits_flat.topk(k, dim=1).indices
+            epoch_topk_map[f"top{k}"] += (topk_preds == tens_int_flat.view(-1, 1)).any(dim=1).sum().item()
+
         total_loss += loss_all.item()
         num_batches += 1
-        running_acc += curr_acc
         bar.update(1)
-        if i == 315:
-            break
 
     for key in epoch_topk_map.keys():
-        epoch_topk_map[key] = epoch_topk_map[key] / num_batches
+        epoch_topk_map[key] = epoch_topk_map[key] / max(n_valid, 1) * 100
     avg_loss = total_loss / num_batches
-    avg_acc = (running_acc / num_batches)*100
-    student_mod.logger.info(f"=== running accuracy this cell prediction epoch: {avg_acc:.2f}% ===")
+    student_mod.logger.info(f"=== top1 accuracy this finetuning epoch: {epoch_topk_map['top1']:.2f}% ===")
+    avg_loss = total_loss / num_batches
     student_mod.logger.info(f"=== avg loss this cell prediction epoch: {avg_loss:.4f} ===")
     bar.close()
     return avg_loss, epoch_topk_map
@@ -271,15 +258,20 @@ def eval_block_predictor(
                 local_cls=False
             )
 
+            # returns [B, N, N_CLASSES]
             pred_classes = block_predictor(
                 block_cls_tokens
             )
 
-        # transform into [B*target_blocks, num_classes]
-        pred_classes_flat = pred_classes.view(-1, 81)
+        # flatten into [B*N, N_CLASSES]
+        pred_classes_flat = pred_classes.flatten(0, 1)
 
-        # transform into [B*target_blocks]
-        tens_int_flat = tens_int_classes.view(-1)
+        # transform into [B*N] (GT classes for every block in the batch)
+        tens_int_flat = tens_int_classes.flatten()
+
+        valid = tens_int_flat != 80
+
+        pred_classes_flat, tens_int_flat = pred_classes_flat[valid], tens_int_flat[valid]
         for k in range(1, 6):
             topk_preds = pred_classes_flat.topk(k, dim=1).indices
             tens_int_flat_exp = tens_int_flat.view(-1, 1)
