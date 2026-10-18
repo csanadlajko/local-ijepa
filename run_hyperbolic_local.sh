@@ -15,7 +15,7 @@ python3 local_jepa.py \
     --batch_size 16 \
     --epochs 20 \
     --lr 0.0001 \
-    --finetune_lr 0.0005 \
+    --finetune_lr 0.001 \
     --num_classes 80 \
     --num_block_categories 81 \
     --multimodal_run n \
