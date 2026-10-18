@@ -1,3 +1,6 @@
+
+### DEPRACATED SCRIPT, WILL BE UPDATE IN FUTURE VERSIONS ###
+
 import torch
 import matplotlib.pyplot as plt
 import numpy as np
