@@ -1,11 +1,12 @@
-from ..utils.masking import apply_mask
-from ..utils.ema import _ema_update
+import datetime
+
+import matplotlib.pyplot as plt
 import torch
 import torch.nn.functional as F
-import datetime
-import matplotlib.pyplot as plt
-
 from tqdm import tqdm
+
+from ..utils.ema import _ema_update
+from ..utils.masking import apply_mask
 
 run_identifier: str = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
 

@@ -1,11 +1,12 @@
+import torch
 from torch.utils.data import DataLoader, random_split
 from torchvision import datasets, transforms
-import torch
-from .healthcare.mri_dataprocess import MRIImageDataset
-from .healthcare.lung_cancer_dataprocess import LungCancerDataset, PDL1Dataset
-from .coco.coco import COCODataset
-from .cifar10dot1 import CIFAR10dot1Dataset
+
 from ..parser.parser import parse_jepa_args
+from .cifar10dot1 import CIFAR10dot1Dataset
+from .coco.coco import COCODataset
+from .healthcare.lung_cancer_dataprocess import LungCancerDataset, PDL1Dataset
+from .healthcare.mri_dataprocess import MRIImageDataset
 
 args = parse_jepa_args()
 

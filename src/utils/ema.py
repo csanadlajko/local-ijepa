@@ -1,5 +1,6 @@
 import torch
 
+
 @torch.no_grad()
 def _ema_update(teacher_mod, student_mod, momentum=0.999):
     for t_param, s_param in zip(teacher_mod.parameters(), student_mod.parameters()):

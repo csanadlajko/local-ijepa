@@ -1,9 +1,11 @@
 import torch
-from ..utils.masking import apply_mask
-from ..utils.ema import _ema_update
 import torch.nn.functional as F
 from tqdm import tqdm
+
+from ..utils.ema import _ema_update
+from ..utils.masking import apply_mask
 from ..utils.patch_metadata import compute_weights
+
 
 def train_local_jepa(
         teacher_mod, 
@@ -193,7 +195,7 @@ def train_block_predictor(
         num_batches += 1
         bar.update(1)
 
-    for key in epoch_topk_map.keys():
+    for key in epoch_topk_map:
         epoch_topk_map[key] = epoch_topk_map[key] / max(n_valid, 1) * 100
     avg_loss = total_loss / num_batches
     student_mod.logger.info(f"=== top1 accuracy this finetuning epoch: {epoch_topk_map['top1']:.2f}% ===")
@@ -282,11 +284,11 @@ def eval_block_predictor(
 
         num_batches += 1
         if (i+1) % 200 == 0:
-            for key in running_acc_map.keys():
+            for key in running_acc_map:
                 predictor.logger.info(f"running accuracy for {key} is: {running_acc_map[key] / num_batches * 100}%")
 
         bar.update(1)
-    for key in running_acc_map.keys():
+    for key in running_acc_map:
         running_acc_map[key] = (running_acc_map[key] / num_batches) * 100
     
     return running_acc_map

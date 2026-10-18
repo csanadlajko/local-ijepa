@@ -1,6 +1,7 @@
 import json
 from typing import Any
 
+
 def write_results(
     run_id: str,
     cls_loss_list: list[int],

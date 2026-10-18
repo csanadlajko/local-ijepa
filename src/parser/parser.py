@@ -1,5 +1,6 @@
 from argparse import ArgumentParser
 
+
 def parse_jepa_args():
     parser = ArgumentParser(description="train JEPA model")
     parser.add_argument("--depth", help="depth of ViT model (default: 6)", default=6, type=int)

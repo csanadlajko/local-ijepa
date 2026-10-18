@@ -1,28 +1,32 @@
-from src.parser.parser import parse_jepa_args
+import datetime
+
+import torch
+from transformers import AutoModelForCausalLM, AutoTokenizer
+
+from src.data_preprocess.dataloader import load_dataset
+from src.models.predictor import ViTPredictor
 from src.models.vit import VisionTransformer
-from src.models.predictor import (
-    ViTPredictor
-)
+from src.parser.parser import parse_jepa_args
 from src.train.train_ijepa import (
-    train, # main JEPA training loop for creating the representational space
-    train_cls, # CLS token supervised training loop
-    eval_cls, # cls evalutaion on the test dataset
+    eval_cls,  # cls evalutaion on the test dataset
+    train,  # main JEPA training loop for creating the representational space
+    train_cls,  # CLS token supervised training loop
 )
 from src.train.train_local_jepa import (
-    train_local_jepa, # train JEPA model on COCO
-    train_block_predictor, # finetune block predictor
-    eval_block_predictor # evaluate finetuned JEPA model
+    eval_block_predictor,  # evaluate finetuned JEPA model
+    train_block_predictor,  # finetune block predictor
+    train_local_jepa,  # train JEPA model on COCO
 )
-from src.data_preprocess.dataloader import load_dataset
-from src.utils.config_ijepa import get_model_config, init_weights, create_finetune_model
-from src.utils.masking import Mask, CellMask
-from src.utils.patch_metadata import PatchProcesser, BlockProcessor
+from src.utils.config_ijepa import create_finetune_model, get_model_config, init_weights
 from src.utils.logging_module import logger
-from src.utils.model_loader import load_pretrained_backbone_models, load_pretrained_finetune_models, clear_ws
+from src.utils.masking import CellMask, Mask
+from src.utils.model_loader import (
+    clear_ws,
+    load_pretrained_backbone_models,
+    load_pretrained_finetune_models,
+)
+from src.utils.patch_metadata import BlockProcessor, PatchProcesser
 from src.utils.store_results import write_results
-from transformers import AutoTokenizer, AutoModelForCausalLM
-import torch
-import datetime
 
 args = parse_jepa_args()
 device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -203,7 +207,7 @@ if __name__ == "__main__":
                 torch.save(predictor.state_dict(), f"{result_folder}/trained_predictor_jepa_{run_identifier}_{epoch+1}ep.pth")
 
     else:
-        logger.info(f"Skipping JEPA backbone and loading pretrained models from huggingface")
+        logger.info("Skipping JEPA backbone and loading pretrained models from huggingface")
         load_pretrained_backbone_models(
             geometry=args.geometry,
             run_id=args.bb_run_id,
@@ -258,7 +262,7 @@ if __name__ == "__main__":
                 if args.dataset == "coco":
                     torch.save(block_predictor.state_dict(), f"{result_folder}/trained_block_pred_{args.geometry}_{run_identifier}_{epoch+1}ep.pth")
     else:
-        logger.info(f"Skipping finetuning phase and loading pretrained models from huggingface")
+        logger.info("Skipping finetuning phase and loading pretrained models from huggingface")
         load_pretrained_finetune_models(
             geometry=args.geometry,
             run_id=args.ft_run_id,

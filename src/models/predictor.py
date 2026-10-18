@@ -1,9 +1,15 @@
-import torch.nn as nn
 import torch
+from torch import nn
+
 from ..utils.masking import apply_mask
-from ..utils.pos_encoding import sinusoidal_pos_embedding2d, sinusoidal_block_pos_embedding2d, get_block_size
+from ..utils.pos_encoding import (
+    get_block_size,
+    sinusoidal_block_pos_embedding2d,
+    sinusoidal_pos_embedding2d,
+)
 from .vit import TransformerEncoder
- 
+
+
 class ViTPredictor(nn.Module):
 
     def __init__(
