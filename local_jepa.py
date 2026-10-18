@@ -19,6 +19,7 @@ from src.utils.masking import Mask, CellMask
 from src.utils.patch_metadata import PatchProcesser, BlockProcessor
 from src.utils.logging_module import logger
 from src.utils.model_loader import load_pretrained_backbone_models, load_pretrained_finetune_models, clear_ws
+from src.utils.store_results import write_results
 from transformers import AutoTokenizer, AutoModelForCausalLM
 import torch
 import datetime
@@ -291,6 +292,14 @@ if __name__ == "__main__":
     logger.info(f"Classification accuracy (map) is: {cls_acc}")
 
     clear_ws(logger)
+
+    write_results(
+        run_id=run_identifier,
+        cls_loss_list=cls_loss_per_epoch,
+        topk_acc=accuracy_per_epoch,
+        topk_acc_barch=cls_acc,
+        res_folder=result_folder
+    )
 
     # show_topk_accuracy(accuracy_per_epoch, run_identifier, result_folder)
     # show_loss_per_epoch(cls_loss_per_epoch, run_identifier, result_folder)
