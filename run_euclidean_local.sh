@@ -20,5 +20,5 @@ python3 local_jepa.py \
     --multimodal_run n \
     --debug y \
     --geometry euclidean \
-    --skip_backbone y \
-    --load_backbone y
+    --load_backbone y \
+    --bb_run_id 2026-10-11T223242Z
