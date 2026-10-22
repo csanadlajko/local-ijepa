@@ -27,6 +27,7 @@ from src.utils.model_loader import (
 )
 from src.utils.patch_metadata import BlockProcessor, PatchProcesser
 from src.utils.store_results import write_results
+import sys
 
 args = parse_jepa_args()
 device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -159,7 +160,7 @@ if __name__ == "__main__":
     else:
         logger.info(f"Starting training normal I-JEPA mode for {args.epochs} epoch(s)!")
 
-    if args.load_backbone == "n" or args.skip_backbone == "y":
+    if args.load_backbone == "n" or args.skip_backbone != "y":
         for epoch in range(args.epochs):
 
             logger.info(f"=== EPOCH {epoch + 1}/{args.epochs} ===")
@@ -218,10 +219,13 @@ if __name__ == "__main__":
             device=device
         )
 
+    if args.skip_finetune == "y":
+        logger.info("Skipping finetuning, shutting down training...")
+        sys.exit(0)
+
     block_pred_loss = torch.nn.CrossEntropyLoss().to(device)
 
-
-    if args.load_finetune == "n" or args.skip_finetune == "y":
+    if args.load_finetune == "n":
         for epoch in range(args.epochs):
             logger.info(f"=== Classification finetuning EPOCH {epoch+1}/{args.epochs} ===")
             if args.dataset != "pdl1" and args.dataset != "coco":
@@ -274,6 +278,7 @@ if __name__ == "__main__":
             device=device
         )
 
+
     if args.dataset != "pdl1" and args.dataset != "coco":
         cls_acc = eval_cls(
             model=student_model,
@@ -295,15 +300,15 @@ if __name__ == "__main__":
         )
     logger.info(f"Classification accuracy (map) is: {cls_acc}")
 
-    clear_ws(logger)
+    # clear_ws(logger)
 
-    write_results(
-        run_id=run_identifier,
-        cls_loss_list=cls_loss_per_epoch,
-        topk_acc=accuracy_per_epoch,
-        topk_acc_barch=cls_acc,
-        res_folder=result_folder
-    )
+    # write_results(
+    #     run_id=run_identifier,
+    #     cls_loss_list=cls_loss_per_epoch,
+    #     topk_acc=accuracy_per_epoch,
+    #     topk_acc_barch=cls_acc,
+    #     res_folder=result_folder
+    # )
 
     # show_topk_accuracy(accuracy_per_epoch, run_identifier, result_folder)
     # show_loss_per_epoch(cls_loss_per_epoch, run_identifier, result_folder)

@@ -1,5 +1,4 @@
-
-echo "executing hyperbolic run"
+echo "executing hyperbolic run (40ep)"
 
 python3 local_jepa.py \
     --dataset coco \
@@ -15,7 +14,7 @@ python3 local_jepa.py \
     --batch_size 16 \
     --epochs 40 \
     --lr 0.0001 \
-    --finetune_lr 0.001 \
+    --finetune_lr 0.003 \
     --num_classes 80 \
     --num_block_categories 81 \
     --multimodal_run n \
