@@ -160,7 +160,7 @@ if __name__ == "__main__":
     else:
         logger.info(f"Starting training normal I-JEPA mode for {args.epochs} epoch(s)!")
 
-    if args.load_backbone == "n" or args.skip_backbone != "y":
+    if args.load_backbone == "n":
         for epoch in range(args.epochs):
 
             logger.info(f"=== EPOCH {epoch + 1}/{args.epochs} ===")

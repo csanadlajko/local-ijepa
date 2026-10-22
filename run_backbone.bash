@@ -20,4 +20,4 @@ python3 local_jepa.py \
     --multimodal_run n \
     --debug y \
     --geometry euclidean \
-    --skip-finetune y
+    --skip_finetune y
