@@ -13,7 +13,7 @@ python3 local_jepa.py \
     --num_heads 8 \
     --num_target 4 \
     --batch_size 16 \
-    --epochs 20 \
+    --epochs 40 \
     --lr 0.0001 \
     --finetune_lr 0.001 \
     --num_classes 80 \

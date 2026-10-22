@@ -1,4 +1,4 @@
-echo "executing euclidean run"
+echo "executing euclidean run (40ep)"
 
 python3 local_jepa.py \
     --dataset coco \

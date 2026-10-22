@@ -159,7 +159,7 @@ if __name__ == "__main__":
     else:
         logger.info(f"Starting training normal I-JEPA mode for {args.epochs} epoch(s)!")
 
-    if args.load_backbone == "n":
+    if args.load_backbone == "n" or args.skip_backbone == "y":
         for epoch in range(args.epochs):
 
             logger.info(f"=== EPOCH {epoch + 1}/{args.epochs} ===")
@@ -221,7 +221,7 @@ if __name__ == "__main__":
     block_pred_loss = torch.nn.CrossEntropyLoss().to(device)
 
 
-    if args.load_finetune == "n":
+    if args.load_finetune == "n" or args.skip_finetune == "y":
         for epoch in range(args.epochs):
             logger.info(f"=== Classification finetuning EPOCH {epoch+1}/{args.epochs} ===")
             if args.dataset != "pdl1" and args.dataset != "coco":
