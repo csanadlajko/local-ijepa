@@ -141,7 +141,7 @@ class ViTPredictor(nn.Module):
             for att_block in self.target_block_transformer:
                 cls_extended = att_block(cls_extended, None)
 
-            if local_cls:
+            if local_cls:  # misleading parameter -> stands for multimodal run....
                 current_classes = [image_label[block] for image_label in labels] # len(batch)
                 labels_for_block = [f"this block represents a {c}" for c in current_classes]
                 label_tokens: dict[str, torch.Tensor] = self.tokenizer(labels_for_block, return_tensors='pt', padding=True)

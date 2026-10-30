@@ -46,7 +46,7 @@ def get_model_config(student_model, predictor, learning_rate, epochs, block_pred
         "optim_cls": optim_cls,
         "optim_predictor": optim_predictor,
         "optim_block_predictor": optim_block_predictor,
-        "ijepa_loss": nn.MSELoss(),
+        "ijepa_loss": nn.SmoothL1Loss(),
         "cls_loss": nn.CrossEntropyLoss(),
         "student_scheduler": student_scheduler,
         "block_predictor_loss": nn.CrossEntropyLoss()
