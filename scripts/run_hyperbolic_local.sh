@@ -21,4 +21,4 @@ python3 local_jepa.py \
     --debug y \
     --geometry hyperbolic \
     --load_backbone y \
-    --bb_run_id 2026-10-11T223332Z
+    --bb_run_id 2026-10-22T083829Z
