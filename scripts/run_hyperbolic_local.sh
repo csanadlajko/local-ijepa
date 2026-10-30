@@ -3,7 +3,7 @@ echo "executing hyperbolic run (40ep)"
 python3 local_jepa.py \
     --dataset coco \
     --coco_train_folder /mnt/c/Users/csanadlajko/Documents/suli/tdk/train2017/train2017/ --coco_train_annotation /mnt/c/Users/csanadlajko/Documents/suli/tdk/annotations_trainval2017/annotations/instances_train2017.json \
-    --result_folder "$(pwd)/results/hyperbolic" \
+    --result_folder "/home/clajko/suli/tdk/local-ijepa/results/hyperbolic" \
     --image_size 256 \
     --patch_size 16 \
     --embed_dim 256 \
