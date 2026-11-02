@@ -21,4 +21,4 @@ python3 local_jepa.py \
     --debug y \
     --geometry euclidean \
     --load_backbone y \
-    --bb_run_id 2026-10-22T083829Z
+    --bb_run_id 2026-10-30T224556Z
