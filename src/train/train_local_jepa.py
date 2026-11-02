@@ -113,7 +113,8 @@ def train_block_predictor(
         optim_main_pred,
         l_cls,
         l_parent,
-        l_depth
+        l_depth,
+        l_separation
     ):
     block_predictor.train()
     student_mod.train()
@@ -169,7 +170,7 @@ def train_block_predictor(
 
         logits, parts = block_predictor.losses(block_cls_tokens, tens_int_classes, class_weights=class_weights)
 
-        loss_all = l_cls * parts["cls"] + l_parent * parts["parent"] + l_depth * parts["depth"]
+        loss_all = l_cls * parts["cls"] + l_parent * parts["parent"] + l_depth * parts["depth"] + l_separation * parts["separation"]
 
         optim_block_predictor.zero_grad()
         optim_main_pred.zero_grad()

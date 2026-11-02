@@ -41,6 +41,8 @@ def parse_jepa_args():
     parser.add_argument("--l_cls", help="lambda value of the cls loss (default: 1.0)", default=1.0, type=float)
     parser.add_argument("--l_parent", help="lambda value of the parent loss (default: 1.0)", default=1.0, type=float)
     parser.add_argument("--l_depth", help="lambda value of the depth loss (default: 1.0)", default=1.0, type=float)
+    parser.add_argument("--category_separation", help="minimum distance between supercategory prototypes. default depends on the geometry: euclidean 2.2, hyperbolic 5.5, spheric 1.4", default=None, type=float)
+    parser.add_argument("--l_separation", help="lambda value of the supercategory separation loss (default: 1.0)", default=1.0, type=float)
     parser.add_argument("--l_block_loss", help="lambda value of the block CLS loss in the JEPA backbone", default=0.5, type=float)
     parser.add_argument("--load_backbone", help="loads pretrained JEPA backbone models from HuggingFace. automatically skips the backbone pre-training phase (default: n)", type=str, default="n")
     parser.add_argument("--load_finetune", help="loads pretrained finetune models from HuggingFace. automatically skips the finetuning phase (default: n)", default="n", type=str)

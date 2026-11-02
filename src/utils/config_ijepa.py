@@ -70,7 +70,7 @@ def create_loss_weights(occ_map):
     extended = torch.cat([class_weights, class_weights[:1]])
     return extended
 
-def create_finetune_model(geometry: str, jepa_embed_dim: int, class_parent: list[int], proj_dim: int, r_max: int, tau: int, margin: int):
+def create_finetune_model(geometry: str, jepa_embed_dim: int, class_parent: list[int], proj_dim: int, r_max: int, tau: int, margin: int, category_separation: float | None = None):
     match geometry.lower():
         case "euclidean":
             return EuclideanEmbeddingSpaceHead(
@@ -79,7 +79,8 @@ def create_finetune_model(geometry: str, jepa_embed_dim: int, class_parent: list
                 proj_dim=proj_dim,
                 r_max=r_max,
                 tau=tau,
-                margin=margin
+                margin=margin,
+                category_separation=category_separation
             )
         case "hyperbolic":
             return HyperbolicEmbeddingSpaceHead(
@@ -88,7 +89,8 @@ def create_finetune_model(geometry: str, jepa_embed_dim: int, class_parent: list
                 proj_dim=proj_dim,
                 r_max=r_max,
                 tau=tau,
-                margin=margin
+                margin=margin,
+                category_separation=category_separation
             )
         case "spheric":
             return SphericEmbeddingSpaceHead(
@@ -97,7 +99,8 @@ def create_finetune_model(geometry: str, jepa_embed_dim: int, class_parent: list
                 proj_dim=proj_dim,
                 r_max=r_max,
                 tau=tau,
-                margin=margin
+                margin=margin,
+                category_separation=category_separation
             )
         case _:
             return None

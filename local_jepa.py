@@ -121,6 +121,7 @@ if __name__ == "__main__":
         tau=args.tau,
         r_max=args.r_max,
         margin=args.margin,
+        category_separation=args.category_separation,
         class_parent=datasets["class_parent"]
     )
 
@@ -254,7 +255,8 @@ if __name__ == "__main__":
                     optim_main_pred=model_config["optim_predictor"],
                     l_cls=args.l_cls,
                     l_parent=args.l_parent,
-                    l_depth=args.l_depth
+                    l_depth=args.l_depth,
+                    l_separation=args.l_separation
                 )
             accuracy_per_epoch.append(accuracy_epoch)
             cls_loss_per_epoch.append(cls_loss_at_epoch)

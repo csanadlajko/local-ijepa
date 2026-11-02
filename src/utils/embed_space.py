@@ -7,12 +7,17 @@ from torch import nn
 
 class RootEmbeddingSpaceHead(nn.Module):
 
-    def __init__(self, embed_dim, class_parent, proj_dim = 16, r_max = 2.0, tau = 1, margin = 0.5):
+    default_category_separation = 0.5
+
+    def __init__(self, embed_dim, class_parent, proj_dim = 16, r_max = 2.0, tau = 1, margin = 0.5, category_separation = None):
         super().__init__()
 
         # maximum length of a vector
         self.r_max = r_max
         self.margin = margin
+        if category_separation is None:
+            category_separation = self.default_category_separation
+        self.category_separation = category_separation
 
         self.log_tau = nn.Parameter(torch.tensor(math.log(tau)))
         self.tau = tau
@@ -101,10 +106,16 @@ class RootEmbeddingSpaceHead(nn.Module):
         gap = self.radius(category_nodes)[self.class_parent] + self.margin - self.radius(class_nodes)
         loss_depth = F.relu(gap).mean()
 
-        return logits, {"cls": loss_cls, "parent": loss_parent, "depth": loss_depth}
+        pair = self.dist(category_nodes.unsqueeze(1), category_nodes.unsqueeze(0))
+        rows, cols = torch.triu_indices(self.n_super, self.n_super, offset=1, device=pair.device)
+        loss_separation = F.relu(self.category_separation - pair[rows, cols]).mean()
+
+        return logits, {"cls": loss_cls, "parent": loss_parent, "depth": loss_depth, "separation": loss_separation}
 
 
 class EuclideanEmbeddingSpaceHead(RootEmbeddingSpaceHead):
+
+    default_category_separation = 2.2
 
     def dist(self, x: torch.Tensor, y: torch.Tensor):
         return ((x - y) ** 2).sum(-1).add(1e-9).sqrt()
@@ -116,6 +127,8 @@ class EuclideanEmbeddingSpaceHead(RootEmbeddingSpaceHead):
         return (tens ** 2).sum(-1).add(1e-9).sqrt()
 
 class HyperbolicEmbeddingSpaceHead(RootEmbeddingSpaceHead):
+
+    default_category_separation = 5.5
 
     def to_manifold(self, tens: torch.Tensor):
         """Transform a [B, N, D] tensor into lower dimension hyperbolic space"""
@@ -135,6 +148,8 @@ class HyperbolicEmbeddingSpaceHead(RootEmbeddingSpaceHead):
         return 2 * torch.arctanh(norm)
 
 class SphericEmbeddingSpaceHead(RootEmbeddingSpaceHead):
+
+    default_category_separation = 1.4
 
     def to_manifold(self, tens: torch.Tensor):
         return F.normalize(tens, dim=-1)
