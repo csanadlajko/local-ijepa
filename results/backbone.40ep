@@ -1,3 +1,5 @@
+(MSE loss backbone)
+
 clajko@DESKTOP-FVIOGK6:~/suli/tdk/local-ijepa$ bash run_backbone.bash 
 executing backbone training (40ep)
 [2026-10-22 08:38:29,337] - [INFO] - Initializing models on device: cuda
