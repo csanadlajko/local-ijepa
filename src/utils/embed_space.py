@@ -7,17 +7,14 @@ from torch import nn
 
 class RootEmbeddingSpaceHead(nn.Module):
 
-    default_category_separation = 0.5
+    parent_radius = 1.0
+    class_radius = 1.5
 
-    def __init__(self, embed_dim, class_parent, proj_dim = 16, r_max = 2.0, tau = 1, margin = 0.5, category_separation = None):
+    def __init__(self, embed_dim, class_parent, proj_dim = 16, r_max = 2.0, tau = 1):
         super().__init__()
 
         # maximum length of a vector
         self.r_max = r_max
-        self.margin = margin
-        if category_separation is None:
-            category_separation = self.default_category_separation
-        self.category_separation = category_separation
 
         self.log_tau = nn.Parameter(torch.tensor(math.log(tau)))
         self.tau = tau
@@ -100,22 +97,19 @@ class RootEmbeddingSpaceHead(nn.Module):
         # GT (self.class_parent) is the list of the actualy supercategories of all the classes
         loss_parent = F.cross_entropy(parent_logits, self.class_parent)
         
-        # parent embeddings should be closer to the root with at least self.margin amount, than the class nodes
-        # if gap is negative, it means th parent + radius distance is smaller (closer) -> relu gives 0
-        # if its larger than 0, it means the child is closer, relu returns its value as the loss (mean afterwards)
-        gap = self.radius(category_nodes)[self.class_parent] + self.margin - self.radius(class_nodes)
-        loss_depth = F.relu(gap).mean()
+        parent_radius = self.radius(category_nodes)
+        class_radius = self.radius(class_nodes)
+        loss_depth = (parent_radius - self.parent_radius).square().mean() + (class_radius - self.class_radius).square().mean()
 
-        pair = self.dist(category_nodes.unsqueeze(1), category_nodes.unsqueeze(0))
-        rows, cols = torch.triu_indices(self.n_super, self.n_super, offset=1, device=pair.device)
-        loss_separation = F.relu(self.category_separation - pair[rows, cols]).mean()
+        direction = F.normalize(category_nodes, dim=-1)
+        cosine = direction @ direction.T
+        rows, cols = torch.triu_indices(self.n_super, self.n_super, offset=1, device=cosine.device)
+        loss_separation = F.relu(cosine[rows, cols]).mean()
 
         return logits, {"cls": loss_cls, "parent": loss_parent, "depth": loss_depth, "separation": loss_separation}
 
 
 class EuclideanEmbeddingSpaceHead(RootEmbeddingSpaceHead):
-
-    default_category_separation = 2.2
 
     def dist(self, x: torch.Tensor, y: torch.Tensor):
         return ((x - y) ** 2).sum(-1).add(1e-9).sqrt()
@@ -128,7 +122,8 @@ class EuclideanEmbeddingSpaceHead(RootEmbeddingSpaceHead):
 
 class HyperbolicEmbeddingSpaceHead(RootEmbeddingSpaceHead):
 
-    default_category_separation = 5.5
+    parent_radius = 1.0
+    class_radius = 2.0
 
     def to_manifold(self, tens: torch.Tensor):
         """Transform a [B, N, D] tensor into lower dimension hyperbolic space"""
@@ -149,7 +144,8 @@ class HyperbolicEmbeddingSpaceHead(RootEmbeddingSpaceHead):
 
 class SphericEmbeddingSpaceHead(RootEmbeddingSpaceHead):
 
-    default_category_separation = 1.4
+    parent_radius = 1.4
+    class_radius = 1.9
 
     def to_manifold(self, tens: torch.Tensor):
         return F.normalize(tens, dim=-1)

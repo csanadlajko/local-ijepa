@@ -120,8 +120,6 @@ if __name__ == "__main__":
         proj_dim=args.finetune_embed_dim,
         tau=args.tau,
         r_max=args.r_max,
-        margin=args.margin,
-        category_separation=args.category_separation,
         class_parent=datasets["class_parent"]
     )
 
