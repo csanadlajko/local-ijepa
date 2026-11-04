@@ -113,8 +113,7 @@ def train_block_predictor(
         optim_main_pred,
         l_cls,
         l_parent,
-        l_depth,
-        l_separation
+        l_depth
     ):
     block_predictor.train()
     student_mod.train()
@@ -170,7 +169,7 @@ def train_block_predictor(
 
         logits, parts = block_predictor.losses(block_cls_tokens, tens_int_classes, class_weights=class_weights)
 
-        loss_all = l_cls * parts["cls"] + l_parent * parts["parent"] + l_depth * parts["depth"] + l_separation * parts["separation"]
+        loss_all = l_cls * parts["cls"] + l_parent * parts["parent"] + l_depth * parts["depth"]
 
         optim_block_predictor.zero_grad()
         optim_main_pred.zero_grad()
@@ -200,7 +199,6 @@ def train_block_predictor(
         epoch_topk_map[key] = epoch_topk_map[key] / max(n_valid, 1) * 100
     avg_loss = total_loss / num_batches
     student_mod.logger.info(f"=== top1 accuracy this finetuning epoch: {epoch_topk_map['top1']:.2f}% ===")
-    avg_loss = total_loss / num_batches
     student_mod.logger.info(f"=== avg loss this cell prediction epoch: {avg_loss:.4f} ===")
     bar.close()
     return avg_loss, epoch_topk_map
