@@ -28,7 +28,7 @@ class RootEmbeddingSpaceHead(nn.Module):
 
         self.embed_proj = nn.Linear(embed_dim, proj_dim)
         self.class_nodes = nn.Parameter(0.1 * torch.randn(self.n_classes, proj_dim), requires_grad=True)
-        self.category_nodes = nn.Parameter(0.1 * torch.randn(self.n_super, proj_dim), requires_grad=True)
+        self.category_nodes = nn.Parameter(1.5 * torch.eye(self.n_super, proj_dim), requires_grad=True)
 
     def no_weight_decay(self):
         """Points of the embedding space, weight decay would pull them towards the root"""
@@ -135,6 +135,14 @@ class HyperbolicEmbeddingSpaceHead(RootEmbeddingSpaceHead):
         return 2 * torch.arctanh(norm)
 
 class SphericEmbeddingSpaceHead(RootEmbeddingSpaceHead):
+
+    def __init__(self, embed_dim, class_parent, proj_dim = 16, r_max = 2.0, tau = 1, margin = 0.5):
+        super().__init__(embed_dim, class_parent, proj_dim, r_max, tau, margin)
+        # axis 0 is the pole, start on the next axes so every parent sits on the equator
+        with torch.no_grad():
+            shifted = self.category_nodes.new_zeros(self.category_nodes.shape)
+            shifted[:, 1:self.n_super + 1] = 1.5 * torch.eye(self.n_super)
+            self.category_nodes.copy_(shifted)
 
     def to_manifold(self, tens: torch.Tensor):
         return F.normalize(tens, dim=-1)
