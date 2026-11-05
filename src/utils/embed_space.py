@@ -117,22 +117,32 @@ class EuclideanEmbeddingSpaceHead(RootEmbeddingSpaceHead):
 
 class HyperbolicEmbeddingSpaceHead(RootEmbeddingSpaceHead):
 
-    def to_manifold(self, tens: torch.Tensor):
-        """Transform a [B, N, D] tensor into lower dimension hyperbolic space"""
-        norm = tens.norm(dim=-1, keepdim=True).clamp_min(1e-6)
-        
-        # expmap -> geodesic distance * direction
-        return torch.tanh(norm) * tens / norm
+    # temporarily unused
+    # def to_manifold(self, tens: torch.Tensor):
+    #     """Transform a [B, N, D] tensor into lower dimension hyperbolic space"""
+    #     norm = tens.norm(dim=-1, keepdim=True).clamp_min(1e-6)
+    #     
+    #     # expmap -> geodesic distance * direction
+    #     return torch.tanh(norm) * tens / norm
+
+    def points(self, block_cls: torch.Tensor):
+        cls = self.bound(self.feat_scale * self.embed_proj(block_cls))
+        class_nodes_proj = self.bound(self.class_nodes)
+        category_nodes_proj = self.bound(self.category_nodes)
+        return cls, class_nodes_proj, category_nodes_proj
 
     def dist(self, x: torch.Tensor, y: torch.Tensor):
         x_norm = x.norm(dim=-1)
         y_norm = y.norm(dim=-1)
-        den = ((1 - x_norm ** 2) * (1 - y_norm ** 2)).clamp_min(1e-6)
-        return torch.arccosh((1 + 2 * ((x - y) ** 2).sum(-1) / den).clamp_min(1 + 1e-6))
+        # cos = A * B /||A|| * ||B||
+        cos = (x * y).sum(-1) / (x_norm * y_norm).clamp_min(1e-6)
+        # z is the hyperbolic law of cosines
+        z = torch.cosh(2 * x_norm) * torch.cosh(2 * y_norm) - torch.sinh(2 * x_norm) * torch.sinh(2 * y_norm) * cos
+        return torch.arccosh(z.clamp_min(1 + 1e-6))
 
     def radius(self, tens: torch.Tensor):
         norm = tens.norm(dim=-1)
-        return 2 * torch.arctanh(norm)
+        return 2 * norm
 
 class SphericEmbeddingSpaceHead(RootEmbeddingSpaceHead):
 
