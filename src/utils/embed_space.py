@@ -161,7 +161,9 @@ class SphericEmbeddingSpaceHead(RootEmbeddingSpaceHead):
         return F.normalize(tens, dim=-1)
 
     def dist(self, x: torch.Tensor, y: torch.Tensor):
-        return torch.acos((x*y).sum(dim=-1).clamp(-1 + 1e-6, 1 - 1e-6))
+        cos = (x * y).sum(dim=-1).clamp(-1, 1)
+        return (1 - cos).clamp_min(0).sqrt()
 
     def radius(self, tens: torch.Tensor):
-        return torch.acos(tens[..., 0].clamp(-1 + 1e-6, 1 - 1e-6))
+        radial = (tens[..., 1:].pow(2).sum(-1) + 1e-8).sqrt()
+        return torch.atan2(radial, tens[..., 0])
