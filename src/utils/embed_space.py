@@ -86,7 +86,14 @@ class RootEmbeddingSpaceHead(nn.Module):
         logits = self.class_logits(cls_proj, class_nodes)
 
         # CE on [80, 80] and [80] ([16, 5] label tensor flattened, classes for every block in the batch) tensor
-        loss_cls = F.cross_entropy(logits.flatten(0, 1), labels.flatten(), weight=class_weights, ignore_index=self.n_classes)
+        # handle if a batch only containts class 80 (backgorund)
+        labels_flat = labels.flatten()
+        logits_flat = logits.flatten(0, 1)
+        valid = labels_flat != self.n_classes
+        if valid.any():
+            loss_cls = F.cross_entropy(logits_flat[valid], labels_flat[valid], weight=class_weights)
+        else:
+            loss_cls = logits_flat.sum() * 0
 
         # distance between [80, 1, 16] and [1, 12, 16]
         # return [80, 12, 16] ([CL, CA, D]), for every class CL, the distance between category CA is D -> creates logits as well 
