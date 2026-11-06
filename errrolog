@@ -1,0 +1,41 @@
+clajko@DESKTOP-FVIOGK6:~/suli/tdk/local-ijepa$ bash scripts/run_spheric_local.sh 
+executing spheric run (40ep)
+[2026-11-06 23:02:41,334] - [INFO] - Initializing models on device: cuda
+[2026-11-06 23:02:41,335] - [INFO] - Loading COCO dataset...
+[2026-11-06 23:03:08,427] - [INFO] - Dataset loaded successfully!
+[2026-11-06 23:03:08,729] - [INFO] - Skipping text encoder initialization as multimodal run is not set to true!
+[2026-11-06 23:03:08,795] - [INFO] - Finetuning will take place in spheric geometry
+[2026-11-06 23:03:08,819] - [INFO] - total number of parameters approx.: 12080033
+[2026-11-06 23:03:08,819] - [INFO] - Starting training normal I-JEPA mode for 40 epoch(s)!
+[2026-11-06 23:03:08,819] - [INFO] - Skipping JEPA backbone and loading pretrained models from huggingface
+[2026-11-06 23:03:08,819] - [INFO] - Downloading spheric pretrained JEPA models into .models/spheric...
+[2026-11-06 23:03:08,819] - [INFO] - Downloading teacher_model_jepa_2026-10-30T224556Z_40ep.pth...
+[2026-11-06 23:03:09,005] - [INFO] - Model downloaded successfully: .models/spheric/teacher_model_jepa_2026-10-30T224556Z_40ep.pth
+[2026-11-06 23:03:09,005] - [INFO] - Loading model into memory...
+[2026-11-06 23:03:09,042] - [INFO] - teacher_model_jepa_2026-10-30T224556Z_40ep.pth successfully loaded into memory!
+[2026-11-06 23:03:09,042] - [INFO] - Downloading trained_student_jepa_2026-10-30T224556Z_40ep.pth...
+[2026-11-06 23:03:09,186] - [INFO] - Model downloaded successfully: .models/spheric/trained_student_jepa_2026-10-30T224556Z_40ep.pth
+[2026-11-06 23:03:09,186] - [INFO] - Loading model into memory...
+[2026-11-06 23:03:09,221] - [INFO] - trained_student_jepa_2026-10-30T224556Z_40ep.pth successfully loaded into memory!
+[2026-11-06 23:03:09,221] - [INFO] - Downloading trained_predictor_jepa_2026-10-30T224556Z_40ep.pth...
+[2026-11-06 23:03:09,359] - [INFO] - Model downloaded successfully: .models/spheric/trained_predictor_jepa_2026-10-30T224556Z_40ep.pth
+[2026-11-06 23:03:09,359] - [INFO] - Loading model into memory...
+[2026-11-06 23:03:09,434] - [INFO] - trained_predictor_jepa_2026-10-30T224556Z_40ep.pth successfully loaded into memory!
+[2026-11-06 23:03:09,434] - [INFO] - === Classification finetuning EPOCH 1/40 ===
+  2%|███▋                                                                                                                                                                                                                | 51/2958 [00:59<51:20,  1.06s/it]Traceback (most recent call last):
+  File "/home/clajko/suli/tdk/local-ijepa/local_jepa.py", line 243, in <module>
+    cls_loss_at_epoch, accuracy_epoch = train_block_predictor(
+                                        ~~~~~~~~~~~~~~~~~~~~~^
+        student_mod=student_model,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<12 lines>...
+        l_depth=args.l_depth
+        ^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/clajko/suli/tdk/local-ijepa/src/train/train_local_jepa.py", line 190, in train_block_predictor
+    raise RuntimeError(
+    ...<3 lines>...
+    )
+RuntimeError: non-finite at batch 51: loss=nan parts={'cls': nan, 'parent': 1.6383857727050781, 'depth': 0.007889695465564728} tokens_finite=False logits_finite=False bad_grads=['student.patch_embed.proj.weight', 'student.patch_embed.proj.bias', 'student.encoder.0.norm1.weight', 'student.encoder.0.norm1.bias', 'student.encoder.0.norm2.weight', 'student.encoder.0.norm2.bias', 'student.encoder.0.att.in_proj_weight', 'student.encoder.0.att.in_proj_bias'] (total 233), saved to nan_batch.pt
+  2%|███▌                                                                                                                                                                                                              | 51/2958 [01:06<1:03:02,  1.30s/it]
