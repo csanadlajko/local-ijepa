@@ -152,7 +152,7 @@ if __name__ == "__main__":
     student_scheduler = model_config["student_scheduler"]
 
     logger.info(
-        f"total number of parameters approx.: {sum(p.numel() for p in student_model.parameters()) + sum(p.numel() for p in teacher_model.parameters()) + sum(p.numel() for p in predictor.parameters())}",
+        f"total number of parameters approx.: {sum(p.numel() for p in student_model.parameters()) + sum(p.numel() for p in teacher_model.parameters()) + sum(p.numel() for p in predictor.parameters()) + sum(p.numel() for p in block_predictor.parameters())}",
     )
 
     if args.multimodal_run == "y":
