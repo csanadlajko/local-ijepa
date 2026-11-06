@@ -150,6 +150,7 @@ def train_block_predictor(
         context_masks, target_masks = normal_mask(images, batch_bbox_list)
         tens_int_classes, _ = block_processor(batch_bbox_list, target_masks, string_labels, int_labels)
 
+        rng_state = torch.cuda.get_rng_state() if images.is_cuda else torch.get_rng_state()
         student_tokens, _ = student_mod(images, masks=context_masks, cls=False)
 
         _, block_cls_tokens = predictor(
@@ -176,6 +177,21 @@ def train_block_predictor(
         optim_student.zero_grad()
 
         loss_all.backward()
+
+        # debug: stop at the first non-finite loss / gradient, weights are still finite here (no optimizer step yet)
+        grads_finite = torch.stack([torch.isfinite(p.grad).all() for m in (student_mod, predictor, block_predictor) for p in m.parameters() if p.grad is not None]).all()
+        if not torch.isfinite(loss_all) or not grads_finite:
+            bad = [f"{tag}.{n}" for tag, m in (("student", student_mod), ("predictor", predictor), ("head", block_predictor)) for n, p in m.named_parameters() if p.grad is not None and not torch.isfinite(p.grad).all()]
+            torch.save({
+                "batch_idx": i, "images": images.cpu(), "annotation": annotation, "rng_state": rng_state,
+                "context_masks": [m.cpu() for m in context_masks], "target_masks": [[t.cpu() for t in tm] for tm in target_masks],
+                "student": student_mod.state_dict(), "predictor": predictor.state_dict(), "block_predictor": block_predictor.state_dict(),
+            }, "nan_batch.pt")
+            raise RuntimeError(
+                f"non-finite at batch {i}: loss={loss_all.item()} parts={ {k: v.item() for k, v in parts.items()} } "
+                f"tokens_finite={torch.isfinite(block_cls_tokens).all().item()} logits_finite={torch.isfinite(logits).all().item()} "
+                f"bad_grads={bad[:8]} (total {len(bad)}), saved to nan_batch.pt"
+            )
 
         optim_block_predictor.step()
         optim_main_pred.step()
