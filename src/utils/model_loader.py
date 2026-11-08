@@ -18,7 +18,7 @@ def load_pretrained_backbone_models(
     predictor: ViTPredictor, 
     logger,
     device,
-    epoch_cp = 20
+    epoch_cp = 40
     ):
 
     MODEL_OUT_FOLDER: str = f"{ROOT_OUT_FOLDER}/{geometry}"
