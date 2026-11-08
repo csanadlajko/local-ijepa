@@ -48,6 +48,8 @@ def parse_jepa_args():
     parser.add_argument("--skip_finetune", help="completely skips finetuning stage (default: n)", default="n", type=str)
     parser.add_argument("--bb_run_id", help="backbone run id for pretrained JEPA backbone models, fetched from HuggingFace", type=str)
     parser.add_argument("--ft_run_id", help="finetuning run id for pretrained finetuning models, fetched from HuggingFace", type=str)
+    parser.add_argument("--bb_checkpoint", help="load backbone models from a checkpoint, then continue training (default: n)", default="n", type=str)
+    parser.add_argument("--ft_checkpoint", help="load finetune models from a checkpoint, then continue training (default: n)", default="n", type=str)
 
     args = parser.parse_args()
 

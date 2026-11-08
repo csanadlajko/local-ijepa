@@ -161,6 +161,20 @@ if __name__ == "__main__":
         logger.info(f"Starting training normal I-JEPA mode for {args.epochs} epoch(s)!")
 
     if args.load_backbone == "n":
+
+        if args.bb_checkpoint == "y":
+            logger.info(f"loading backbone checkoint with ID={args.bb_run_id} from Hugging Face")
+            load_pretrained_backbone_models(
+            geometry=args.geometry,
+            run_id=args.bb_run_id,
+            student_model=student_model,
+            teacher_model=teacher_model,
+            predictor=predictor,
+            logger=logger,
+            device=device,
+            epoch_cp=args.epochs
+        )
+
         for epoch in range(args.epochs):
 
             logger.info(f"=== EPOCH {epoch + 1}/{args.epochs} ===")
@@ -226,6 +240,21 @@ if __name__ == "__main__":
     block_pred_loss = torch.nn.CrossEntropyLoss().to(device)
 
     if args.load_finetune == "n":
+
+        if args.ft_checkpoint == "y":
+            logger.info(f"loading finetuned checkpoint with ID={args.ft_run_id} from Hugging Face")
+            load_pretrained_finetune_models(
+            geometry=args.geometry,
+            run_id=args.ft_run_id,
+            student_model=student_model,
+            teacher_model=teacher_model,
+            predictor=predictor,
+            block_predictor=block_predictor,
+            logger=logger,
+            device=device,
+            epoch_cp=args.epochs
+        )
+
         for epoch in range(args.epochs):
             logger.info(f"=== Classification finetuning EPOCH {epoch+1}/{args.epochs} ===")
             if args.dataset != "pdl1" and args.dataset != "coco":

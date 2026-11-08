@@ -56,7 +56,7 @@ def load_pretrained_finetune_models(
     block_predictor,
     logger,
     device,
-    epoch_cp = 20
+    epoch_cp = 40
     ):
 
     MODEL_OUT_FOLDER: str = f"{ROOT_OUT_FOLDER}/{geometry}"
